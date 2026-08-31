@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>訪問者ファイル</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Antique&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wood-dark:#1c130d;
+    --wood:#33241a;
+    --wood-light:#4a3626;
+    --parchment:#EFE3C8;
+    --parchment-dark:#e0d0a6;
+    --brass:#B8935A;
+    --brass-light:#DDC08D;
+    --brass-dark:#7c5f34;
+    --ink:#241a12;
+    --ink-soft:#6b5a44;
+    --safe:#4FA88C;
+    --safe-light:#7FCBB0;
+    --warn:#D98A3D;
+    --danger:#B23A2E;
+    --danger-light:#E2604F;
+    --shadow: 0 12px 32px rgba(8,5,2,0.5);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at 50% -15%, #6b4c30 0%, transparent 55%),
+      repeating-linear-gradient(90deg, var(--wood) 0px, var(--wood) 42px, var(--wood-light) 42px, var(--wood-light) 44px);
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    color:var(--parchment);
+    display:flex;
+    justify-content:center;
+    padding:26px 12px 60px;
+  }
+  .stage-wrap{ width:100%; max-width:460px; }
+
+  .door-panel{
+    background: radial-gradient(ellipse at 50% 0%, #3d2c1e 0%, var(--wood-dark) 70%);
+    border-radius:16px;
+    padding:20px 18px 20px;
+    box-shadow: var(--shadow), inset 0 0 0 2px rgba(184,147,90,0.5), inset 0 0 40px rgba(0,0,0,0.5);
+    position:relative;
+    overflow:hidden;
+  }
+  .door-panel::before{
+    content:"";
+    position:absolute; inset:9px;
+    border:1px solid rgba(221,192,141,0.22);
+    border-radius:11px;
+    pointer-events:none;
+  }
+  .rivet{
+    position:absolute; width:6px; height:6px; border-radius:50%;
+    background:radial-gradient(circle at 35% 35%, var(--brass-light), var(--brass-dark));
+    box-shadow:0 1px 2px rgba(0,0,0,0.6);
+  }
+  .rivet.tl{top:14px; left:14px;} .rivet.tr{top:14px; right:14px;}
+  .rivet.bl{bottom:14px; left:14px;} .rivet.br{bottom:14px; right:14px;}
+
+  .gear{ position:absolute; opacity:0.22; transform-origin:center; }
+  .gear.spin{ animation: spin 18s linear infinite; }
+  .gear.spin.rev{ animation-direction:reverse; animation-duration:24s; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .gear.g1{ top:6px; left:6px; width:34px; height:34px; }
+  .gear.g2{ bottom:6px; right:6px; width:26px; height:26px; }
+
+  .log-header{
+    text-align:center; margin-bottom:12px; padding-bottom:9px;
+    border-bottom:1px dashed rgba(221,192,141,0.35); position:relative; z-index:1;
+  }
+  .log-date{ font-family:'Zen Antique', serif; font-size:15px; letter-spacing:0.1em; color:var(--brass-light); }
+  .log-sub{ font-size:10.5px; letter-spacing:0.14em; color:#a8977a; margin-top:2px; }
+
+  .panel-inner{ animation: fadeSlide 0.45s ease; }
+  @keyframes fadeSlide{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:translateY(0); } }
+
+  /* ---------- title screen ---------- */
+  .title-screen{ text-align:center; padding:12px 2px 4px; position:relative; z-index:1; }
+  .title-cover{
+    font-family:'Zen Antique', serif; font-size:24px; letter-spacing:0.16em;
+    color:var(--brass-light); margin:6px 0 2px; text-shadow:0 2px 6px rgba(0,0,0,0.6);
+  }
+  .title-month{ font-size:12px; letter-spacing:0.2em; color:#c9b98f; margin-bottom:18px; }
+  .title-lede{
+    text-align:left; font-size:13px; line-height:1.9; color:#ecdfc4;
+    background:rgba(0,0,0,0.22); border-radius:8px; padding:14px 16px; margin-bottom:12px;
+  }
+  .title-purpose{
+    text-align:left; font-size:11.5px; line-height:1.85; color:#c9b98f;
+    background:rgba(0,0,0,0.15); border-radius:8px; padding:12px 14px; margin-bottom:18px;
+    border:1px solid rgba(184,147,90,0.3);
+  }
+  .title-purpose b{ color:var(--brass-light); font-weight:700; }
+
+  .peephole-row{ display:flex; justify-content:center; margin-bottom:10px; position:relative; z-index:1; }
+  .peephole{
+    width:150px; height:150px; border-radius:50%; position:relative;
+    background: radial-gradient(circle at 50% 42%, #2b2016 0%, #0c0906 62%, #050403 100%);
+    box-shadow:
+      0 0 0 5px var(--brass-dark), 0 0 0 8px var(--brass), 0 0 0 10px rgba(0,0,0,0.5),
+      inset 0 0 26px 10px rgba(0,0,0,0.85);
+    overflow:hidden; display:flex; align-items:center; justify-content:center;
+  }
+  .peephole .screw{ position:absolute; width:7px; height:7px; border-radius:50%;
+    background:radial-gradient(circle at 35% 35%, var(--brass-light), var(--brass-dark)); }
+  .peephole .screw::after{ content:""; position:absolute; top:50%; left:8%; width:84%; height:1px;
+    background:rgba(30,20,8,0.7); transform:rotate(35deg); }
+  .s1{top:-3px; left:50%; margin-left:-3.5px;} .s2{bottom:-3px; left:50%; margin-left:-3.5px;}
+  .s3{left:-3px; top:50%; margin-top:-3.5px;} .s4{right:-3px; top:50%; margin-top:-3.5px;}
+
+  .peephole .visitor{ width:70%; height:70%; transition: transform 0.6s ease; position:relative; z-index:1; }
+  .peephole .visitor svg{ width:100%; height:100%; display:block; }
+
+  .flash-pulse{
+    position:absolute; inset:0; border-radius:50%; pointer-events:none;
+    animation: flashPulse 0.75s ease; z-index:2;
+  }
+  @keyframes flashPulse{ 0%{opacity:0;} 28%{opacity:0.6;} 100%{opacity:0;} }
+
+  .shake{ animation: shakeMe 0.42s ease; }
+  @keyframes shakeMe{
+    0%,100%{ transform:translateX(0); } 20%{ transform:translateX(-5px); }
+    40%{ transform:translateX(4px); } 60%{ transform:translateX(-3px); } 80%{ transform:translateX(2px); }
+  }
+
+  .alert-light{
+    position:absolute; top:6px; right:6px; width:9px; height:9px; border-radius:50%;
+    background:var(--danger-light); box-shadow:0 0 6px 2px rgba(226,96,79,0.4);
+    opacity:0; transition:opacity 0.4s; z-index:1;
+  }
+  .alert-light.on{ opacity:1; animation:blink 0.9s infinite; }
+  @keyframes blink{ 0%,100%{opacity:1;} 50%{opacity:0.25;} }
+
+  .visitor-name{
+    text-align:center; font-family:'Zen Antique', serif; font-weight:400;
+    font-size:15px; letter-spacing:0.1em; color:var(--parchment); margin-bottom:2px;
+  }
+  .clue-line{ text-align:center; font-size:11.5px; color:#c9b98f; letter-spacing:0.03em; margin-bottom:14px; font-style:italic; }
+
+  .gauge-wrap{ display:flex; flex-direction:column; align-items:center; margin-bottom:12px; }
+  .gauge-wrap svg{ width:190px; height:auto; overflow:visible; }
+  #needleLine{ transition: transform 0.7s cubic-bezier(.34,1.4,.4,1); transform-origin:100px 100px; }
+  .gauge-caption{ font-size:11px; letter-spacing:0.12em; color:var(--brass-light); margin-top:-6px; }
+  .gauge-caption b{ color:var(--parchment); font-variant-numeric:tabular-nums; margin-left:4px; }
+
+  .speech{
+    background: linear-gradient(180deg, var(--parchment), var(--parchment-dark));
+    border-radius:4px; padding:16px 16px 14px; box-shadow: var(--shadow);
+    position:relative; margin-bottom:14px; min-height:60px; border:1px solid rgba(124,95,52,0.4);
+  }
+  .speech::before{
+    content:""; position:absolute; top:-9px; left:50%; margin-left:-9px;
+    width:18px; height:18px; background:var(--parchment);
+    transform:rotate(45deg); border-left:1px solid rgba(124,95,52,0.4); border-top:1px solid rgba(124,95,52,0.4);
+  }
+  .speech-tag{ font-size:10.5px; color:var(--ink-soft); letter-spacing:0.1em; margin-bottom:6px; }
+  .speech-line{ font-size:14.5px; line-height:1.75; color:var(--ink); }
+
+  .choices{ display:flex; flex-direction:column; gap:9px; }
+  .choice-btn{
+    text-align:left; background: linear-gradient(180deg, #4a3626, #33241a);
+    color:var(--parchment); border:1px solid rgba(184,147,90,0.45);
+    border-radius:8px; padding:11px 14px 11px 38px;
+    font-family:inherit; font-size:13.5px; line-height:1.5; cursor:pointer;
+    position:relative; transition: background 0.15s, transform 0.1s;
+  }
+  .choice-btn:hover{ background: linear-gradient(180deg, #5a4230, #3d2c1e); }
+  .choice-btn:active{ transform:scale(0.985); }
+  .choice-btn:focus-visible{ outline:2px solid var(--brass-light); outline-offset:2px; }
+  .choice-btn::before{
+    content:""; position:absolute; left:13px; top:50%; margin-top:-4px;
+    width:8px; height:8px; border-radius:50%;
+    background: radial-gradient(circle at 35% 35%, var(--brass-light), var(--brass-dark));
+    box-shadow:0 0 0 2px rgba(0,0,0,0.3);
+  }
+  .choice-btn:disabled{ opacity:0.4; cursor:default; }
+
+  .reaction-toast{ margin-top:12px; font-size:12.5px; color:var(--brass-light); text-align:center; letter-spacing:0.02em; min-height:16px; line-height:1.7; }
+
+  .next-row{ margin-top:14px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
+  .next-btn{
+    background: linear-gradient(180deg, var(--brass-light), var(--brass));
+    color:var(--wood-dark); border:none; border-radius:18px; padding:9px 22px;
+    font-family:'Zen Kaku Gothic New', sans-serif; font-weight:700; font-size:13px;
+    letter-spacing:0.05em; cursor:pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  }
+  .next-btn:hover{ background: var(--brass-light); }
+  .next-btn.ghost{
+    background:transparent; color:var(--brass-light); border:1px solid rgba(184,147,90,0.5); box-shadow:none;
+  }
+
+  .flip-card{ perspective:900px; margin:8px 0 4px; }
+  .flip-inner{
+    position:relative; width:100%; min-height:180px;
+    transition: transform 0.85s cubic-bezier(.4,.2,.2,1); transform-style:preserve-3d;
+  }
+  .flip-inner.flipped{ transform:rotateY(180deg); }
+  .flip-front, .flip-back{
+    position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:14px; border-radius:10px;
+  }
+  .flip-front{ background:linear-gradient(180deg,#4a3626,#33241a); border:1px solid rgba(184,147,90,0.4); }
+  .flip-back{
+    background: linear-gradient(180deg,var(--parchment),var(--parchment-dark));
+    color:var(--ink); transform:rotateY(180deg); border:1px solid rgba(124,95,52,0.4);
+  }
+  .seal{ width:52px; height:52px; margin-bottom:10px; }
+  .flip-front .cap{ font-size:12px; letter-spacing:0.14em; color:#c9b98f; }
+  .flip-back .reveal-title{ font-size:11.5px; color:var(--ink-soft); letter-spacing:0.1em; margin-bottom:4px; }
+  .flip-back .reveal-name{ font-family:'Zen Antique', serif; font-size:17px; margin-bottom:6px; }
+  .flip-back .reveal-flavor{ font-size:12.5px; line-height:1.7; color:var(--ink-soft); }
+
+  .fail-screen{ text-align:center; padding:6px 2px 4px; position:relative; }
+  .stamp{
+    display:inline-block; border:4px double var(--danger-light); color:var(--danger-light);
+    font-family:'Zen Antique', serif; font-size:19px; letter-spacing:0.12em;
+    padding:8px 18px; transform:rotate(-6deg); margin:6px 0 16px;
+    text-shadow:0 0 6px rgba(226,96,79,0.4); animation: stampIn 0.4s ease;
+  }
+  @keyframes stampIn{
+    0%{ transform:rotate(-6deg) scale(2.2); opacity:0; }
+    60%{ transform:rotate(-6deg) scale(0.94); opacity:1; }
+    100%{ transform:rotate(-6deg) scale(1); }
+  }
+  .fail-desc{ font-size:13px; line-height:1.9; color:#ecdfc4; margin-bottom:16px; text-align:left; background:rgba(0,0,0,0.25); border-radius:8px; padding:14px 16px; }
+
+  .end-screen{ text-align:center; }
+  .end-rank{
+    font-family:'Zen Antique', serif; font-size:52px; font-weight:400; margin:4px 0 2px;
+    color:var(--brass-light); text-shadow:0 3px 10px rgba(0,0,0,0.6);
+    animation: rankPop 0.5s cubic-bezier(.34,1.6,.4,1);
+  }
+  @keyframes rankPop{ 0%{ transform:scale(0.3); opacity:0; } 100%{ transform:scale(1); opacity:1; } }
+  .end-title{ font-size:14.5px; letter-spacing:0.08em; margin-bottom:6px; color:var(--parchment); }
+  .end-community{ font-size:12px; color:#c9b98f; margin-bottom:14px; }
+  .end-desc{ font-size:13px; line-height:1.9; color:#ecdfc4; margin-bottom:16px; text-align:left; background:rgba(0,0,0,0.22); border-radius:8px; padding:14px 16px; }
+  .tips{ text-align:left; background:rgba(0,0,0,0.25); border-radius:8px; padding:14px 16px; margin-bottom:16px; border:1px solid rgba(184,147,90,0.35); }
+  .tips h3{ margin:0 0 8px; font-size:12px; letter-spacing:0.1em; color:var(--brass-light); font-family:'Zen Antique', serif; font-weight:400; }
+  .tips ol{ margin:0; padding-left:18px; font-size:12.5px; line-height:1.9; color:#ecdfc4; }
+
+  /* ---------- results index / detail ---------- */
+  .results-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+  .result-item{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    background: linear-gradient(180deg, #4a3626, #33241a);
+    border:1px solid rgba(184,147,90,0.4); border-radius:8px;
+    padding:11px 14px; font-size:13px; color:var(--parchment); cursor:pointer; text-align:left;
+    width:100%; font-family:inherit;
+  }
+  .result-item:hover{ background: linear-gradient(180deg, #5a4230, #3d2c1e); }
+  .result-item .rname{ font-family:'Zen Antique', serif; font-size:13.5px; }
+  .result-item .rverdict{ font-size:11.5px; color:var(--brass-light); white-space:nowrap; }
+  .transcript{ display:flex; flex-direction:column; gap:12px; margin-bottom:16px; }
+  .qa{ background:rgba(0,0,0,0.22); border-radius:8px; padding:12px 14px; }
+  .qa .q{ font-size:12px; color:#c9b98f; margin-bottom:6px; line-height:1.7; }
+  .qa .a{ font-size:13px; color:var(--parchment); margin-bottom:5px; line-height:1.6; }
+  .qa .r{ font-size:11.5px; color:var(--brass-light); font-style:italic; line-height:1.6; }
+  .detail-header{ text-align:center; margin-bottom:12px; }
+  .detail-header .dname{ font-family:'Zen Antique', serif; font-size:17px; color:var(--parchment); }
+  .detail-header .dreveal{ font-size:12px; color:#c9b98f; margin-top:3px; }
+
+  footer.note{ text-align:center; font-size:10.5px; color:#a8977a; margin-top:14px; letter-spacing:0.03em; }
+
+  @media (prefers-reduced-motion: reduce){
+    .alert-light.on{ animation:none; opacity:1; }
+    .gear.spin{ animation:none; }
+    .panel-inner{ animation:none; }
+    .flash-pulse{ animation:none; opacity:0; }
+    .shake{ animation:none; }
+    .stamp{ animation:none; }
+    .end-rank{ animation:none; }
+    #needleLine{ transition:none; }
+    .flip-inner{ transition:none; }
+    *{ transition-duration:0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+<div class="stage-wrap">
+  <div class="door-panel" id="panel"></div>
+  <footer class="note">※ これは架空の来訪者との練習用シミュレーションです。実際の対応の参考としてもご活用ください。</footer>
+</div>
+
+<script>
+/* ---------- icon library ---------- */
+const ICONS = {
+  leaflet: `<svg viewBox="0 0 100 100"><circle cx="50" cy="34" r="16" fill="#d8c9a8"/><path d="M20 96 Q22 58 50 56 Q78 58 80 96 Z" fill="#7c6a4a"/><rect x="60" y="50" width="20" height="26" rx="2" fill="#e9dfc2" stroke="#7c6a4a" stroke-width="2"/></svg>`,
+  clipboard: `<svg viewBox="0 0 100 100"><circle cx="50" cy="34" r="16" fill="#d8c9a8"/><path d="M20 96 Q22 58 50 56 Q78 58 80 96 Z" fill="#5c6a5c"/><rect x="34" y="46" width="20" height="26" rx="2" fill="#e9dfc2" stroke="#5c6a5c" stroke-width="2"/><line x1="38" y1="53" x2="50" y2="53" stroke="#5c6a5c" stroke-width="2"/><line x1="38" y1="59" x2="50" y2="59" stroke="#5c6a5c" stroke-width="2"/></svg>`,
+  flower: `<svg viewBox="0 0 100 100"><circle cx="50" cy="34" r="16" fill="#e0c9c9"/><path d="M20 96 Q22 58 50 56 Q78 58 80 96 Z" fill="#a45c5c"/><circle cx="70" cy="52" r="5" fill="#e79a9a"/><circle cx="76" cy="58" r="5" fill="#e79a9a"/><circle cx="64" cy="58" r="5" fill="#e79a9a"/><circle cx="70" cy="58" r="4" fill="#e7c95a"/></svg>`,
+  briefcase: `<svg viewBox="0 0 100 100"><circle cx="50" cy="34" r="16" fill="#c9c2b0"/><path d="M20 96 Q22 58 50 56 Q78 58 80 96 Z" fill="#2f3a4a"/><rect x="34" y="48" width="32" height="20" rx="2" fill="#3d4a5c" stroke="#8A6B3E" stroke-width="2"/><rect x="44" y="43" width="12" height="8" rx="2" fill="none" stroke="#8A6B3E" stroke-width="2"/></svg>`,
+  box: `<svg viewBox="0 0 100 100"><circle cx="50" cy="30" r="14" fill="#dcd3bd"/><path d="M22 96 Q24 62 50 60 Q76 62 78 96 Z" fill="#4a6a8a"/><rect x="30" y="56" width="30" height="26" fill="#c99a5b" stroke="#8A6B3E" stroke-width="2"/><line x1="30" y1="69" x2="60" y2="69" stroke="#8A6B3E" stroke-width="2"/><line x1="45" y1="56" x2="45" y2="82" stroke="#8A6B3E" stroke-width="2"/></svg>`,
+  pot: `<svg viewBox="0 0 100 100"><circle cx="50" cy="32" r="15" fill="#e3cdb0"/><path d="M20 96 Q22 60 50 58 Q78 60 80 96 Z" fill="#8a5c4a"/><path d="M38 66 Q50 58 62 66 L60 78 Q50 84 40 78 Z" fill="#6b6b6b" stroke="#444" stroke-width="1.5"/><rect x="46" y="60" width="8" height="6" fill="#444"/></svg>`,
+  meter: `<svg viewBox="0 0 100 100"><circle cx="50" cy="32" r="15" fill="#cdd3c9"/><path d="M20 96 Q22 60 50 58 Q78 60 80 96 Z" fill="#4a6a52"/><rect x="36" y="66" width="22" height="16" rx="2" fill="#e9dfc2" stroke="#333" stroke-width="2"/><circle cx="47" cy="74" r="5" fill="none" stroke="#333" stroke-width="1.5"/></svg>`
+};
+const SEAL_SVG = `<svg class="seal" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="#8A6B3E" stroke="#DDC08D" stroke-width="3"/><circle cx="50" cy="50" r="30" fill="none" stroke="#EFE3C8" stroke-width="1.5" stroke-dasharray="3 4"/><circle cx="50" cy="50" r="10" fill="#EFE3C8"/></svg>`;
+const GEAR_SVG = `<svg viewBox="0 0 100 100" fill="#DDC08D"><path d="M50 8 L58 8 L60 22 L72 26 L83 17 L90 24 L81 35 L85 47 L99 50 L99 58 L85 60 L81 72 L90 83 L83 90 L72 81 L60 85 L58 99 L50 99 L47 85 L35 81 L24 90 L17 83 L26 72 L22 60 L8 58 L8 50 L22 47 L26 35 L17 24 L24 17 L35 26 L47 22 Z M50 36 A14 14 0 1 0 50 64 A14 14 0 1 0 50 36 Z"/></svg>`;
+
+/* ---------- case data (round graph: start -> nodes keyed by id, choice.next = id or 'END') ---------- */
+const CASES = [
+  {
+    type:'decoy', name:'宅配便配達員', icon:'box',
+    clue:'手には大きな段ボール箱を抱えている。',
+    reveal:'ただの宅配便配達員だった。',
+    start:'r1',
+    nodes:{
+      r1:{
+        line:'お荷物のお届けです。こちらにサインをお願いできますか?',
+        choices:[
+          { text:'サインをして荷物を受け取る', tone:'good', communityDelta:10, next:'END',
+            reaction:'「ありがとうございました!」と笑顔で去っていった。' },
+          { text:'配達員証を確認してからサインする', tone:'good', communityDelta:14, next:'END',
+            reaction:'「はい、こちらです」ときちんと提示してくれた。安心して受け取れた。' },
+          { text:'「頼んだ覚えはありません」と追い返す', tone:'cold', communityDelta:-15, next:'END',
+            reaction:'「え…でも、確かにご注文の記録が…」と困った様子だった。' },
+          { text:'「今週は一人で家にいるんです」と世間話をする', tone:'overshare', communityDelta:2, next:'END',
+            reaction:'配達員は少し驚いた顔をしたが、そのまま業務を終えて帰っていった。' }
+        ]
+      }
+    }
+  },
+  {
+    type:'solicitor', name:'パンフレット配布員', icon:'leaflet',
+    clue:'手には紙の束を抱え、にこやかな笑顔を絶やさない。',
+    reveal:'正体は宗教団体の勧誘員だった。',
+    start:'r1',
+    nodes:{
+      r1:{
+        line:'こんにちは、お近くを回らせていただいてます。少しだけお時間よろしいですか?',
+        choices:[
+          { text:'「すみません、今忙しいので」ときっぱり断る', tone:'good', pressureDelta:-15, next:'r2',
+            reaction:'「あ、そうですか…では失礼します」少し驚いた様子で一歩下がった。' },
+          { text:'「失礼ですが、どちらの団体の方ですか?」と尋ねる', tone:'good', pressureDelta:-10, next:'r2',
+            reaction:'「え、あ、〇〇会です…」と少したじろいだ様子を見せた。' },
+          { text:'「何のパンフレットですか?」と尋ねる', tone:'bad', pressureDelta:20, next:'r2',
+            reaction:'「実はですね、心の平安について…」と嬉しそうに話し始めた。' },
+          { text:'無言でうなずく', tone:'neutral', pressureDelta:8, next:'r2',
+            reaction:'「では少しだけ」とドアの隙間に体を寄せてきた。' }
+        ]
+      },
+      r2:{
+        line:'こちらのパンフレット、お家でゆっくり読んでみてください。ちなみに、ご家族はいつもご在宅ですか?',
+        choices:[
+          { text:'「そういったことはお答えできません」と受け取りを断る', tone:'good', pressureDelta:-15, next:'END',
+            reaction:'「そうですか、失礼しました」と会釈して去っていった。' },
+          { text:'「平日は仕事で留守がちですね」と答える', tone:'bad', pressureDelta:15, next:'END',
+            reaction:'「なるほど、参考になります」とにこやかにメモを取っていた。' },
+          { text:'家族の外出スケジュールまで詳しく教える', tone:'verybad', instantFail:true,
+            failTitle:'空き巣被害', reaction:'「それは助かります」と満足げにメモを取っていた。',
+            failText:'数日後、留守を狙われて家に空き巣が入ってしまった。生活パターンを話したことが仇となったようだ…' }
+        ]
+      }
+    }
+  },
+  {
+    type:'decoy', name:'お隣さん', icon:'pot',
+    clue:'見覚えのある顔で、片手に小さな鍋を持っている。',
+    reveal:'ただの近所の方だった。',
+    start:'r1',
+    nodes:{
+      r1:{
+        line:'こんにちは!前に貸してた鍋、そろそろ返してもらえますか?ついでに少し立ち話でも。',
+        choices:[
+          { text:'気持ちよく対応し、少し立ち話をする', tone:'good', communityDelta:10, next:'END',
+            reaction:'「ありがとう、助かったわ〜」和やかに世間話をして帰っていった。' },
+          { text:'世間話の中でさりげなく物騒だという話をする', tone:'good', communityDelta:8, next:'END',
+            reaction:'「そうよねぇ、気をつけなくちゃ」と頷いていた。' },
+          { text:'「今忙しいので」と素っ気なく対応する', tone:'cold', communityDelta:-10, next:'END',
+            reaction:'「あ、そう…」と少し寂しそうな顔をした。' },
+          { text:'長話に付き合って30分近く話し込む', tone:'neutral', communityDelta:5, next:'END',
+            reaction:'楽しい時間だったが、少し予定が押してしまった。' }
+        ]
+      }
+    }
+  },
+  {
+    type:'solicitor', name:'心配ごと相談型', icon:'clipboard',
+    clue:'優しい微笑みを浮かべ、じっとこちらを見つめている。',
+    reveal:'正体は宗教団体の勧誘員だった。',
+    start:'r1',
+    nodes:{
+      r1:{
+        line:'最近、顔色があまり良くないですね…何か悩み事でも?よろしければ聞かせてください。',
+        choices:[
+          { text:'「お気遣いなく、大丈夫です」と話をそらして断る', tone:'good', pressureDelta:-15, next:'r2a',
+            reaction:'「そうですか…でも無理しないでくださいね」と少し食い下がる。' },
+          { text:'「どちらの団体の方ですか?」と身元を尋ねる', tone:'good', pressureDelta:-10, next:'r2b',
+            reaction:'「え、あ…〇〇会という者です…」と少し戸惑った様子を見せた。' },
+          { text:'最近の悩みを話す', tone:'bad', pressureDelta:25, next:'r2c',
+            reaction:'「わかります、それはつらいですね…実は私たちの集まりでは…」と本題に入ってきた。' },
+          { text:'「別に…」と目をそらす', tone:'neutral', pressureDelta:10, next:'r2a',
+            reaction:'「無理しなくていいんですよ」とにじり寄ってきた。' }
+        ]
+      },
+      r2a:{
+        line:'そうですか…では、こちらのパンフレットだけでも受け取っていただけますか?',
+        choices:[
+          { text:'「結構です」と受け取りを断る', tone:'good', pressureDelta:-15, next:'END',
+            reaction:'「そうですか、失礼しました」と会釈して去っていった。' },
+          { text:'「まあ、一応」と受け取る', tone:'bad', pressureDelta:15, next:'END',
+            reaction:'「ありがとうございます、また伺いますね」と嬉しそうにしていた。' },
+          { text:'「気休めなら」とその場でお守りを購入する', tone:'verybad', instantFail:true,
+            failTitle:'高額購入', reaction:'「お買い上げありがとうございます!」と満面の笑み。',
+            failText:'気づけば「特別な浄化グッズ」に十数万円を支払っていた…' }
+        ]
+      },
+      r2b:{
+        line:'〇〇会という者です。よろしければ、心が軽くなるお話だけでも聞いていきませんか?',
+        choices:[
+          { text:'「団体名はわかりました。それでも結構です」と断る', tone:'good', pressureDelta:-20, next:'END',
+            reaction:'「そう、ですか…」と少し肩を落として引き下がった。' },
+          { text:'少し気になって話を続ける', tone:'bad', pressureDelta:15, next:'END',
+            reaction:'「そうでしょう、そうでしょう」と嬉しそうに距離を詰めてきた。' },
+          { text:'「気休めなら」とその場でお守りを購入する', tone:'verybad', instantFail:true,
+            failTitle:'高額購入', reaction:'「お買い上げありがとうございます!」と満面の笑み。',
+            failText:'気づけば「特別な浄化グッズ」に十数万円を支払っていた…' }
+        ]
+      },
+      r2c:{
+        line:'そのお悩み、実は多くの方が同じように抱えているんです。今日だけ特別に、こちらのお守りをお譲りできますが…',
+        choices:[
+          { text:'「やはり結構です」と気持ちを立て直して断る', tone:'good', pressureDelta:-15, next:'END',
+            reaction:'「あら、残念です」と少し食い下がりつつも引き下がった。' },
+          { text:'「じゃあ少しだけ」と話に乗る', tone:'bad', pressureDelta:20, next:'END',
+            reaction:'「それがいいですよ」と満足げに頷いた。' },
+          { text:'「気休めなら」とその場でお守りを購入する', tone:'verybad', instantFail:true,
+            failTitle:'高額購入', reaction:'「お買い上げありがとうございます!」と満面の笑み。',
+            failText:'気づけば「特別な浄化グッズ」に十数万円を支払っていた…' }
+        ]
+      }
+    }
+  },
+  {
+    type:'decoy', name:'検針員', icon:'meter',
+    clue:'制服のようなものを着て、手元の機械をいじっている。',
+    reveal:'ただの電気メーター検針員だった。',
+    start:'r1',
+    nodes:{
+      r1:{
+        line:'電気メーターの点検で伺いました。少しだけ確認させていただいてもよろしいですか?',
+        choices:[
+          { text:'身分証を確認してから対応する', tone:'good', communityDelta:12, next:'END',
+            reaction:'「もちろんです、こちらが証明書です」ときちんと提示してくれた。安心して確認してもらえた。' },
+          { text:'立ち会って確認の様子を見守る', tone:'neutral', communityDelta:6, next:'END',
+            reaction:'特に問題なく終わり、少し落ち着いて見守れた。' },
+          { text:'特に確認せずそのまま対応する', tone:'neutral', communityDelta:4, next:'END',
+            reaction:'特に問題なく点検を終えて帰っていった。(今回はたまたま本物だった)' },
+          { text:'怪しんで追い返す', tone:'cold', communityDelta:-8, next:'END',
+            reaction:'「そうですか…」と少し戸惑いながら帰っていった。(本当に点検の人だったようだ)' }
+        ]
+      }
+    }
+  },
+  {
+    type:'solicitor', name:'距離詰め型', icon:'flower',
+    clue:'とても人懐っこい様子で、やたらと距離が近い。',
+    reveal:'正体は勧誘目的で近づいてきた人物だった。',
+    start:'r1',
+    nodes:{
+      r1:{
+        line:'実は今日、あなたに会えてすごく嬉しいんです。何か運命的なものを感じます!',
+        choices:[
+          { text:'「そういうのは結構です」と一定の距離を保つ', tone:'good', pressureDelta:-15, next:'r2',
+            reaction:'「そんな…もう少しお話しさせてください」と粘る。' },
+          { text:'「そういうことを言う目的は何ですか?」と切り返す', tone:'good', pressureDelta:-10, next:'r2',
+            reaction:'「え、そんな…ただ純粋な気持ちで…」と少し狼狽えた。' },
+          { text:'悪い気はせず、少し話を合わせる', tone:'bad', pressureDelta:20, next:'r2',
+            reaction:'「やっぱり気が合いますね!ぜひ今度お茶でも」と一気に距離を詰めてきた。' },
+          { text:'苦笑いだけして黙る', tone:'neutral', pressureDelta:8, next:'r2',
+            reaction:'沈黙を肯定と受け取ったのか、さらに笑顔で近づいてきた。' }
+        ]
+      },
+      r2:{
+        line:'今度みんなでご飯に行くんです。今からちょっとだけ、特別な場所に案内してもいいですか?',
+        choices:[
+          { text:'「そういったお誘いは遠慮しています」とはっきり断る', tone:'good', pressureDelta:-20, next:'END',
+            reaction:'「そっか…残念です」と少し肩を落として引き下がった。' },
+          { text:'少し興味を惹かれて話を合わせる', tone:'bad', pressureDelta:20, next:'END',
+            reaction:'「じゃあ決まりですね!」と嬉しそうな顔をした。' },
+          { text:'「少しだけなら」とついて行く', tone:'verybad', instantFail:true,
+            failTitle:'連れ去られる', reaction:'「こちらです、どうぞ」と笑顔で促してきた。',
+            failText:'気づけば知らない車に乗せられ、知らない場所へと連れて行かれてしまった…' }
+        ]
+      }
+    }
+  },
+  {
+    type:'solicitor', name:'高圧・粘り型', icon:'briefcase',
+    clue:'分厚い鞄を抱え、書類のようなものをちらつかせている。',
+    reveal:'正体は強引な勧誘・契約目的の訪問者だった。',
+    start:'r1',
+    nodes:{
+      r1:{
+        line:'みなさん最初は断るんですよ。でも後になって『あの時話を聞いてよかった』って言うんです。今だけですから。',
+        choices:[
+          { text:'「結構です。何度いらしても同じです」と毅然と伝える', tone:'good', pressureDelta:-20, next:'r2',
+            reaction:'「そう、ですか…」と初めて怯んだ様子を見せた。' },
+          { text:'「会社名と資格を教えてください」と確認を求める', tone:'good', pressureDelta:-10, next:'r2',
+            reaction:'「え、それは…」と提示を渋った。この時点で少し怪しさが増した。' },
+          { text:'言い返せずに黙り込む', tone:'bad', pressureDelta:20, next:'r2',
+            reaction:'「ですよね、少しだけ聞いてみましょう」と靴を一歩玄関に入れてきた。' },
+          { text:'「考えておきます」とあいまいに答える', tone:'neutral', pressureDelta:12, next:'r2',
+            reaction:'「では明日また伺いますね」と食い下がった。' }
+        ]
+      },
+      r2:{
+        line:'少しだけでいいので、家の中でお話しさせてもらえませんか?こちらの契約書にサインいただければ、今日だけ特別割引もありますので。',
+        choices:[
+          { text:'「家には入れられませんし、契約もしません」とドアを閉める', tone:'good', pressureDelta:-25, next:'END',
+            reaction:'チェーンをかけ、静かにドアを閉めた。外から数回ノックの音がしたが、やがて静かになった。' },
+          { text:'根負けして少しだけドアを開ける', tone:'bad', pressureDelta:30, next:'END',
+            reaction:'隙間に体を入れられ、話がずるずると長引いていく…' },
+          { text:'その場で契約書にサインする', tone:'verybad', instantFail:true,
+            failTitle:'高額契約', reaction:'「ご契約ありがとうございます!」と満足げに書類を回収した。',
+            failText:'気づけば、何百万円もの契約書に自分のサインをしていた…' }
+        ]
+      }
+    }
+  }
+];
+
+const DAY_OFFSETS = [0, 2, 5, 8, 12, 16, 21];
+const START_MONTH = 6, START_DAY = 3;
+function dateStrFor(idx){
+  const o = DAY_OFFSETS[Math.min(idx, DAY_OFFSETS.length-1)];
+  return `20XX年${START_MONTH}月${START_DAY + o}日`;
+}
+function dateStrEpilogue(){
+  const o = DAY_OFFSETS[DAY_OFFSETS.length-1] + 3;
+  return `20XX年${START_MONTH}月${START_DAY + o}日`;
+}
+
+/* ---------- state ---------- */
+let caseIdx = 0, currentRoundId = null;
+let pressure = 15, community = 50, firmCount = 0;
+let ended = false;
+let history = [];
+
+const totalPressureRounds = CASES.filter(c=>c.type==='solicitor')
+  .reduce((a,c)=>a+Object.keys(c.nodes).length,0);
+
+const panel = document.getElementById('panel');
+const clamp = v => Math.max(0, Math.min(100, v));
+
+function decorFrame(){
+  return `
+    <div class="rivet tl"></div><div class="rivet tr"></div>
+    <div class="rivet bl"></div><div class="rivet br"></div>
+    <div class="gear g1 spin">${GEAR_SVG}</div>
+    <div class="gear g2 spin rev">${GEAR_SVG}</div>
+  `;
+}
+function logHeader(dateStr, sub){
+  return `<div class="log-header"><div class="log-date">${dateStr}</div><div class="log-sub">${sub}</div></div>`;
+}
+function setPanel(html){
+  panel.innerHTML = `${decorFrame()}<div class="panel-inner">${html}</div>`;
+}
+function needleAngle(v){ return (v/100*180) - 90; }
+
+function gaugeSVG(v){
+  return `
+    <div class="gauge-wrap">
+      <svg viewBox="0 0 200 115">
+        <path d="M20,100 A80,80 0 0 1 75.3,23.9" fill="none" stroke="#4FA88C" stroke-width="11" stroke-linecap="round"/>
+        <path d="M75.3,23.9 A80,80 0 0 1 147.0,35.3" fill="none" stroke="#D98A3D" stroke-width="11" stroke-linecap="round"/>
+        <path d="M147.0,35.3 A80,80 0 0 1 180,100" fill="none" stroke="#B23A2E" stroke-width="11" stroke-linecap="round"/>
+        <line id="needleLine" x1="100" y1="100" x2="100" y2="32" stroke="#EFE3C8" stroke-width="3.5" stroke-linecap="round"
+          style="transform:rotate(${needleAngle(v)}deg)"/>
+        <circle cx="100" cy="100" r="8" fill="#B8935A" stroke="#7c5f34" stroke-width="2"/>
+      </svg>
+      <div class="gauge-caption" id="gaugeCaption">危険度<b id="gaugeNum">${v}</b></div>
+    </div>
+  `;
+}
+
+/* ---------- title screen ---------- */
+function renderTitle(){
+  setPanel(`
+    <div class="title-screen">
+      <div class="title-cover">訪問者ファイル</div>
+      <div class="title-month">— 20XX年6月 —</div>
+      <div class="title-lede">
+        机の引き出しから、この一か月分の来訪記録が出てきた。<br>
+        古い記録をたどりながら、当時どう対応したかを振り返ってみよう。
+      </div>
+      <div class="title-purpose">
+        <b>このコンテンツについて</b><br>
+        これは、突然の来訪者にどう対応すればよいかをあらかじめ体験し、不安を解消して防犯意識を高めることを目的とした啓発シミュレーションです。実在の団体・個人とは関係ありません。
+      </div>
+      <div class="next-row"><button class="next-btn" id="startBtn">ファイルを開く</button></div>
+    </div>
+  `);
+  document.getElementById('startBtn').addEventListener('click', ()=>{
+    caseIdx=0; currentRoundId=null; render();
+  });
+}
+
+function render(){
+  if(ended) return;
+  if(caseIdx >= CASES.length){ renderEnding(); return; }
+
+  const c = CASES[caseIdx];
+  if(!currentRoundId) currentRoundId = c.start;
+  const node = c.nodes[currentRoundId];
+  const alertOn = c.type==='solicitor' && pressure >= 65;
+  const scale = 1 + (c.type==='solicitor' ? (pressure/100)*0.28 : 0);
+
+  setPanel(`
+    ${logHeader(dateStrFor(caseIdx), `訪問者ファイル No.${caseIdx+1} / ${CASES.length}`)}
+    <div class="peephole-row">
+      <div class="peephole">
+        <div class="screw s1"></div><div class="screw s2"></div>
+        <div class="screw s3"></div><div class="screw s4"></div>
+        <div class="alert-light ${alertOn?'on':''}"></div>
+        <div class="visitor" style="transform:scale(${scale.toFixed(2)})">${ICONS[c.icon]}</div>
+      </div>
+    </div>
+    <div class="visitor-name">正体不明の来訪者</div>
+    <div class="clue-line">手がかり:${c.clue}</div>
+
+    ${gaugeSVG(pressure)}
+
+    <div class="speech">
+      <div class="speech-tag">来訪者の言葉</div>
+      <div class="speech-line">${node.line}</div>
+    </div>
+
+    <div class="choices" id="choicesBox">
+      ${node.choices.map((ch,i)=>`<button class="choice-btn" data-i="${i}">${ch.text}</button>`).join('')}
+    </div>
+    <div class="reaction-toast" id="reactionToast"></div>
+  `);
+
+  document.querySelectorAll('.choice-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> pickChoice(parseInt(btn.dataset.i)));
+  });
+}
+
+function toneColor(tone){
+  if(tone==='good') return 'rgba(79,168,140,0.85)';
+  if(tone==='bad' || tone==='verybad') return 'rgba(178,58,46,0.85)';
+  if(tone==='cold') return 'rgba(178,58,46,0.6)';
+  return 'rgba(217,138,61,0.75)';
+}
+function flashPeephole(tone){
+  const hole = document.querySelector('.peephole');
+  if(!hole) return;
+  const f = document.createElement('div');
+  f.className = 'flash-pulse';
+  f.style.background = `radial-gradient(circle, ${toneColor(tone)} 0%, transparent 70%)`;
+  hole.appendChild(f);
+  setTimeout(()=> f.remove(), 800);
+  if(tone==='bad' || tone==='verybad'){
+    const panelEl = document.getElementById('panel');
+    panelEl.classList.add('shake');
+    setTimeout(()=> panelEl.classList.remove('shake'), 450);
+  }
+}
+function animateNumber(el, from, to, duration){
+  const start = performance.now();
+  function step(now){
+    const t = Math.min(1, (now-start)/duration);
+    el.textContent = Math.round(from + (to-from)*t);
+    if(t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function pickChoice(i){
+  const c = CASES[caseIdx];
+  const node = c.nodes[currentRoundId];
+  const ch = node.choices[i];
+
+  document.querySelectorAll('.choice-btn').forEach(b=>b.disabled = true);
+  document.getElementById('reactionToast').textContent = ch.reaction;
+  flashPeephole(ch.tone);
+
+  if(!history[caseIdx]) history[caseIdx] = { name:c.name, type:c.type, reveal:c.reveal, entries:[] };
+  history[caseIdx].entries.push({
+    line: node.line, choiceText: ch.text, reaction: ch.reaction, tone: ch.tone,
+    delta: c.type==='solicitor' ? (ch.pressureDelta||0) : (ch.communityDelta||0)
+  });
+
+  if(ch.instantFail){
+    setTimeout(()=> renderFail(ch.failTitle, ch.failText), 1000);
+    return;
+  }
+
+  const prevPressure = pressure;
+  if(c.type==='solicitor'){
+    pressure = clamp(pressure + (ch.pressureDelta||0));
+    if(ch.tone==='good') firmCount++;
+  } else {
+    community = clamp(community + (ch.communityDelta||0));
+  }
+
+  if(c.type==='solicitor' && pressure >= 100){
+    setTimeout(()=> renderFail('対応しきれず',
+      '気づけば長い勧誘トークに付き合わされ、断るタイミングを失ってしまった。'), 1000);
+    return;
+  }
+
+  const needle = document.getElementById('needleLine');
+  if(needle){ needle.style.transform = `rotate(${needleAngle(pressure)}deg)`; }
+  const numEl = document.getElementById('gaugeNum');
+  if(numEl && prevPressure !== pressure){ animateNumber(numEl, prevPressure, pressure, 600); }
+
+  const nextId = ch.next;
+  const nextRow = document.createElement('div');
+  nextRow.className = 'next-row';
+  nextRow.innerHTML = `<button class="next-btn" id="nextBtn">${nextId==='END' ? '対応を終える' : '次へ'}</button>`;
+  panel.querySelector('.panel-inner').appendChild(nextRow);
+
+  document.getElementById('nextBtn').addEventListener('click', ()=>{
+    if(nextId === 'END'){
+      showReveal(c, ()=>{ currentRoundId=null; caseIdx++; render(); });
+    } else {
+      currentRoundId = nextId; render();
+    }
+  });
+}
+
+function showReveal(c, cb){
+  setPanel(`
+    ${logHeader(dateStrFor(caseIdx), `訪問者ファイル No.${caseIdx+1} / ${CASES.length}`)}
+    <div class="flip-card">
+      <div class="flip-inner" id="flipInner">
+        <div class="flip-front">${SEAL_SVG}<div class="cap">ファイルを確認中…</div></div>
+        <div class="flip-back">
+          <div class="reveal-title">【正体判明】</div>
+          <div class="reveal-name">${c.name}</div>
+          <div class="reveal-flavor">${c.reveal}</div>
+        </div>
+      </div>
+    </div>
+  `);
+  setTimeout(()=>{ const el=document.getElementById('flipInner'); if(el) el.classList.add('flipped'); }, 550);
+  setTimeout(cb, 2250);
+}
+
+function renderFail(title, text){
+  ended = true;
+  setPanel(`
+    ${logHeader(dateStrFor(caseIdx), '記録:対応失敗')}
+    <div class="fail-screen">
+      <div class="stamp">対応失敗</div>
+      <div class="end-title">${title}</div>
+      <div class="fail-desc">${text}</div>
+      ${tipsBlock()}
+      <div class="next-row"><button class="next-btn" id="retryBtn">もう一度挑戦する</button></div>
+    </div>
+  `);
+  document.getElementById('retryBtn').addEventListener('click', resetGame);
+}
+
+let lastEnding = null;
+
+function renderEnding(){
+  let rank, title, desc;
+  if(firmCount === totalPressureRounds){
+    rank='S'; title='完璧な対応だった';
+    desc='最後まで一貫して、礼儀正しくもきっぱりと断り続けた。感情に訴えられても揺らがず、個人情報も一切渡さない、理想的な対応だった。';
+  } else if(firmCount >= totalPressureRounds*0.7){
+    rank='A'; title='かなり手堅い対応だった';
+    desc='ほとんどの場面でしっかり断ることができた。何度か話を合わせてしまう場面もあったが、大きな失点なく切り抜けた。';
+  } else if(firmCount >= totalPressureRounds*0.45){
+    rank='B'; title='まずまずの対応だった';
+    desc='押し切られそうになる場面もあったが、なんとか最後まで対応しきった。次はもう少し早い段階で「結構です」を言い切れると安心だ。';
+  } else {
+    rank='C'; title='ぎりぎり切り抜けた';
+    desc='何度も話に引き込まれそうになったが、危険度が上限に達する前に全ての来訪者をやり過ごせた。断りのタイミングを早めるとさらに楽になる。';
+  }
+  let communityLine;
+  if(community >= 70) communityLine = 'ご近所からも「感じの良い人」と評判のようだ。';
+  else if(community >= 40) communityLine = 'ご近所付き合いは可もなく不可もなく、といったところ。';
+  else communityLine = 'ただ、ご近所からは少し「そっけない人」と思われているかもしれない。';
+
+  lastEnding = { rank, title, desc, communityLine };
+
+  setPanel(`
+    ${logHeader(dateStrEpilogue(), '記録:全ファイル対応完了')}
+    <div class="end-screen">
+      <div class="end-rank">${rank}</div>
+      <div class="end-title">${title}</div>
+      <div class="end-community">${communityLine}</div>
+      <div class="end-desc">${desc}</div>
+      ${tipsBlock()}
+      <div class="next-row">
+        <button class="next-btn" id="reviewBtn">各ファイルを見返す</button>
+        <button class="next-btn ghost" id="retryBtn">もう一度挑戦する</button>
+      </div>
+    </div>
+  `);
+  document.getElementById('retryBtn').addEventListener('click', resetGame);
+  document.getElementById('reviewBtn').addEventListener('click', renderResultsIndex);
+}
+
+function verdictFor(entry){
+  if(entry.type==='solicitor'){
+    const goodCount = entry.entries.filter(e=>e.tone==='good').length;
+    const ratio = goodCount / entry.entries.length;
+    if(ratio === 1) return '◎ 完璧に対応';
+    if(ratio >= 0.5) return '○ 概ね良好';
+    return '△ 押され気味';
+  } else {
+    const sum = entry.entries.reduce((a,e)=>a+e.delta,0);
+    if(sum >= 10) return '◎ 好印象';
+    if(sum >= 0) return '○ 普通';
+    return '△ そっけない対応';
+  }
+}
+
+function renderResultsIndex(){
+  setPanel(`
+    ${logHeader(dateStrEpilogue(), '記録:訪問者ファイル 一覧')}
+    <div class="results-list">
+      ${history.map((h,i)=>`
+        <button class="result-item" data-i="${i}">
+          <span class="rname">No.${i+1} ${h.name}</span>
+          <span class="rverdict">${verdictFor(h)}</span>
+        </button>
+      `).join('')}
+    </div>
+    <div class="next-row"><button class="next-btn ghost" id="backBtn">結果画面に戻る</button></div>
+  `);
+  document.querySelectorAll('.result-item').forEach(btn=>{
+    btn.addEventListener('click', ()=> renderResultsDetail(parseInt(btn.dataset.i)));
+  });
+  document.getElementById('backBtn').addEventListener('click', ()=>{
+    if(lastEnding) renderEnding(); else renderResultsIndex();
+  });
+}
+
+function renderResultsDetail(i){
+  const h = history[i];
+  setPanel(`
+    ${logHeader(dateStrFor(i), `訪問者ファイル No.${i+1} / ${CASES.length}`)}
+    <div class="detail-header">
+      <div class="dname">${h.name}</div>
+      <div class="dreveal">${h.reveal}</div>
+    </div>
+    <div class="transcript">
+      ${h.entries.map(e=>`
+        <div class="qa">
+          <div class="q">来訪者:${e.line}</div>
+          <div class="a">あなた:${e.choiceText}</div>
+          <div class="r">${e.reaction}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="next-row"><button class="next-btn ghost" id="backBtn">一覧に戻る</button></div>
+  `);
+  document.getElementById('backBtn').addEventListener('click', renderResultsIndex);
+}
+
+function tipsBlock(){
+  return `
+    <div class="tips">
+      <h3>覚え書き — 実践のポイント</h3>
+      <ol>
+        <li>用件を詳しく聞く前に、早い段階で「結構です」と伝える</li>
+        <li>連絡先・在宅パターンなどの個人情報は渡さない</li>
+        <li>家の中には絶対に入れず、ついていかない</li>
+        <li>その場で契約書へのサインや商品購入をしない</li>
+        <li>身分証や所属の提示を求めるなど、相手の正体を確かめる習慣を持つ</li>
+        <li>しつこい場合は同じ言葉を繰り返し、必要なら管理会社や警察への相談も検討する</li>
+      </ol>
+    </div>
+  `;
+}
+
+function resetGame(){
+  caseIdx=0; currentRoundId=null; pressure=15; community=50; firmCount=0; ended=false;
+  history=[]; lastEnding=null;
+  render();
+}
+
+renderTitle();
+</script>
+</body>
+</html>
